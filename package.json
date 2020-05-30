@@ -12,7 +12,9 @@
     "@babel/node": "^7.10.1",
     "@babel/preset-env": "^7.10.1",
     "discord.js": "^12.2.0",
-    "dotenv": "^8.2.0"
+    "dotenv": "^8.2.0",
+    "mongoose": "^4.11.0",
+    "request": "^2.88.2"
   },
   "devDependencies": {
     "nodemon": "^2.0.4"

@@ -2,21 +2,23 @@ import Discord from 'discord.js';
 
 import randomID from '../api/randomID';
 
-const client = new Discord.Client();
-
 export default async function MakeGame(message, args) {
   if (args.length == 0 || args.length != 2) {
     const exampleEmbed = new Discord.MessageEmbed()
       .setColor('#bf3b3b')
       .setDescription(':loudspeaker: **ERROR**\n올바른 명령어를 입력해주세요');
-    message.channel.send(exampleEmbed);
+    message.channel
+      .send(exampleEmbed)
+      .then((msg) => msg.delete({ timeout: 3000 }));
     return;
   }
   if (!(args[1] === '공개' || args[1] === '비공개')) {
     const exampleEmbed = new Discord.MessageEmbed()
       .setColor('#bf3b3b')
       .setDescription(':loudspeaker: **ERROR**\n올바른 명령어를 입력해주세요');
-    message.channel.send(exampleEmbed);
+    message.channel
+      .send(exampleEmbed)
+      .then((msg) => msg.delete({ timeout: 3000 }));
     return;
   }
   const optionEmbed = new Discord.MessageEmbed()
@@ -70,12 +72,6 @@ export default async function MakeGame(message, args) {
   const channel = guild.channels.cache.find(
     (ch) => ch.topic === `방번호: ${roomNumber}`,
   );
-  channel.send(optionEmbed).then((msg) => {
-    msg
-      .react('1️⃣')
-      .then(() => msg.react('2️⃣'))
-      .then(() => msg.react('3️⃣'));
-  });
   if (args[1] === '공개') {
     const roomCreated = new Discord.MessageEmbed()
       .setColor('#34EB3D')
@@ -86,4 +82,35 @@ export default async function MakeGame(message, args) {
       .send(roomCreated)
       .then((msg) => msg.delete({ timeout: 3000 }));
   }
+  channel.send(optionEmbed).then(async (msg) => {
+    try {
+      await msg.react('1️⃣');
+      await msg.react('2️⃣');
+      await msg.react('3️⃣');
+    } catch (err) {
+      console.error(err);
+    }
+  });
+
+  /*
+  message
+    .createReactionCollector((m) => m.author.id == message.author.id, {
+      time: 30000,
+    })
+    .then((collected) => {
+      let checkedNumber;
+      switch (collected.emoji) {
+        case '1️⃣':
+          checkedNumber = 1;
+          break;
+        case '2️⃣':
+          checkedNumber = 2;
+          break;
+        case '3️⃣':
+          checkedNumber = 3;
+          break;
+      }
+      console.log(checkedNumber);
+    });
+    */
 }
