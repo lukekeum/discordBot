@@ -3,13 +3,14 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 
 import help from './commands/help';
-import MakeGame from './commands/makeGame';
+import MakeGame, { getReactionEvent } from './commands/makeGame';
+import inviteGame from './commands/inviteGame';
 import Account from './models/account';
 
 dotenv.config();
 
 const client = new Discord.Client({
-  partials: ['MESSAGE', 'CHANNEL', 'REACTION', 'GUILD_MEMBER', 'USER'],
+  partials: ['MESSAGE', 'CHANNEL', 'REACTION'],
 });
 const prefix = '!';
 
@@ -52,8 +53,6 @@ client.on('message', (message) => {
       console.error(err);
     }
   }
-  console.log(Account.findById(message.author.id) === null);
-
   const args = message.content.slice(prefix.length).split(/ +/);
   const command = args.shift().toLowerCase();
 
@@ -70,11 +69,20 @@ client.on('message', (message) => {
       message.delete();
       MakeGame(message, args);
       break;
+    case '방초대':
+      message.delete();
+      inviteGame(message, args, client);
   }
 });
 
 client.on('messageReactionAdd', async (reaction, user) => {
-  if (user === client.user || reaction.message.author !== client.user) return;
+  const channel = reaction.message.channel;
+  if (!reaction.message.author.bot) return;
+  if (reaction.message.channel.topic.includes('방번호: ')) {
+    if (user.bot) return;
+    const channelNumber = channel.topic.replace('방번호: ', '');
+    getReactionEvent(channelNumber, reaction);
+  }
 });
 
 client.login(process.env.TOKEN);
