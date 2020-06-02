@@ -3,9 +3,9 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 
 import help from './commands/help';
-import MakeGame, { getReactionEvent } from './commands/makeGame';
+import MakeGame, { getReactionMakeGame } from './commands/makeGame';
 import inviteGame from './commands/inviteGame';
-import Account from './models/account';
+import Account from './database/models/account';
 
 dotenv.config();
 
@@ -55,7 +55,6 @@ client.on('message', (message) => {
   }
   const args = message.content.slice(prefix.length).split(/ +/);
   const command = args.shift().toLowerCase();
-
   switch (command) {
     case '도움말':
       message.delete();
@@ -71,18 +70,27 @@ client.on('message', (message) => {
       break;
     case '방초대':
       message.delete();
-      inviteGame(message, args, client);
+      inviteGame(message, args);
   }
 });
 
 client.on('messageReactionAdd', async (reaction, user) => {
-  const channel = reaction.message.channel;
-  if (!reaction.message.author.bot) return;
-  if (reaction.message.channel.topic.includes('방번호: ')) {
-    if (user.bot) return;
-    const channelNumber = channel.topic.replace('방번호: ', '');
-    getReactionEvent(channelNumber, reaction);
+  if (!reaction.message.guild && !user.bot) {
+    // fetch message -> resolve promise from fetch -> message#reactions
+    console.log(await user.dmChannel.fetch());
+    return;
   }
+  const guild = reaction.message.guild;
+  if (reaction.message.author !== client.user || user.bot) {
+    return;
+  }
+  const topic = String(reaction.message.channel.topic);
+  if (topic.includes('방번호: ')) {
+    if (user.bot) return;
+    const channelNumber = topic.replace('방번호: ', '');
+    getReactionMakeGame(channelNumber, reaction);
+  }
+  // TODO: get Room Number with role ==> <Guild>.roles.cache.find(r => r.name === "the string");
 });
 
 client.login(process.env.TOKEN);

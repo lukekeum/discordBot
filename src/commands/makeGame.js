@@ -4,24 +4,29 @@ import randomID from '../api/randomID';
 
 const roundSettingRoom = [];
 
-export const getReactionEvent = (roomNumber, reaction) => {
+export const getReactionMakeGame = (roomNumber, reaction) => {
   const array = roundSettingRoom.filter((room) => room === roomNumber);
   if (array.length !== 1) {
     console.log('[ERROR] The Error Has Been Occured while getReaction');
     return;
   }
-  console.log(`[PASS] Room has been setted [${roomNumber}]`);
   if (reaction.emoji.name === '🗑️') {
     reaction.message.channel.delete(
       '[LOG] Player clicked Whaste Emoji to remove this channel',
     );
+    // TODO: Delete data from database
+    console.log(`[PASS] Room has been deleted [${roomNumber}]`);
     return;
   }
+  console.log(`[PASS] Room has been setted [${roomNumber}]`);
+  const index = roundSettingRoom.indexOf(roomNumber);
+  roundSettingRoom.splice(index, 1);
   const exampleEmbed = new Discord.MessageEmbed()
     .setColor('#34EB3D')
     .setDescription(
       ':wave:  **성공**\n성공적으로 방을 만들었습니다. 이제 플레이어를 초대할 수 있어요\n- **!방초대 @[플레이어이름]** 플레이어를 방으로 초대합니다 ( 봇사용방전용 )   ',
     );
+  // TODO: Edit data from database
   reaction.message.delete();
   reaction.message.channel.send(exampleEmbed);
 };
@@ -116,5 +121,6 @@ export default async function MakeGame(message, args) {
       console.error(err);
     }
   });
+  // TODO: Make data which is from database
   roundSettingRoom.push(roomNumber);
 }
