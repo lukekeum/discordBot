@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 
 import help from './commands/help';
 import MakeGame, { getReactionMakeGame } from './commands/makeGame';
-import inviteGame from './commands/inviteGame';
+import inviteGame, { inviteGameEvent } from './commands/inviteGame';
 import Account from './database/models/account';
 
 dotenv.config();
@@ -43,16 +43,10 @@ client.on('message', (message) => {
     return;
   }
 
-  if (Account.findById(message.author.id) === null) {
-    try {
-      const id = message.author.id;
-      const username = message.author.username;
-      const thumbnail = message.author.displayAvatarURL;
-      Account.localRegister({ id, username, thumbnail });
-    } catch (err) {
-      console.error(err);
-    }
-  }
+  const id = message.author.id;
+  const username = message.author.username;
+  const thumbnail = message.author.displayAvatarURL();
+  //Account.localRegister({ id, username, thumbnail });
   const args = message.content.slice(prefix.length).split(/ +/);
   const command = args.shift().toLowerCase();
   switch (command) {
@@ -71,13 +65,31 @@ client.on('message', (message) => {
     case '방초대':
       message.delete();
       inviteGame(message, args);
+    case 'a':
+      message.delete();
+      const messageEmbed = new Discord.MessageEmbed()
+        .setColor('#bf3b3b')
+        .setTitle('환영합니다')
+        .setDescription(
+          ' \n본 서버에 오신걸 환영합니다\n본 서버에서는 끝말잇기를 즐길 수 있습니다\n아래의 이모지를 누르시면, 권한을 얻을 수 있습니다\n권한을 얻으시고, 법전을 꼭 읽어주세요\n그로 인하여 일어나는 피해는 모두 본인과실인점 알아주시면 감사하겠습니다',
+        );
+      message.channel.send(messageEmbed).then((msg) => msg.react('👍'));
   }
 });
 
+const filter = (reaction, user) => {
+  return '✅' === reaction.emoji.name;
+};
+
 client.on('messageReactionAdd', async (reaction, user) => {
+  if (reaction.message.id === 717386338877571153 && !user.bot) {
+    reaction.message.reactions.removeAll();
+    reaction.message.react('👍');
+    
+  }
   if (!reaction.message.guild && !user.bot) {
     // fetch message -> resolve promise from fetch -> message#reactions
-    console.log(await user.dmChannel.fetch());
+    inviteGameEvent(reaction, user, client.guilds.get('715791707513290812'));
     return;
   }
   const guild = reaction.message.guild;

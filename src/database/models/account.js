@@ -2,12 +2,10 @@ import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 const Account = new Schema({
-  profile: {
-    id: { type: Number }, // Discord User ID
-    // Check always when they are chatting
-    username: { type: String }, // getPlayer Username not ID
-    thumbnail: { type: String }, // "PROFILE-URL"
-  },
+  id: { type: Number }, // Discord User ID
+  // Check always when they are chatting
+  username: { type: String }, // getPlayer Username not ID
+  thumbnail: { type: String }, // "PROFILE-URL"
   Game: {
     isPlaying: { type: Boolean, default: false },
     roomNumber: { type: String, default: null },
@@ -25,11 +23,9 @@ Account.statics.findByID = function (id) {
 
 Account.statics.localRegister = function ({ id, username, thumbnail }) {
   const account = new this({
-    profile: {
-      id,
-      username,
-      thumbnail,
-    },
+    id,
+    username,
+    thumbnail,
   });
   console.log(`[PASS] MongoDB created information of ${id}`);
   return account.save();
