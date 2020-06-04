@@ -42,6 +42,7 @@ client.on('message', (message) => {
     message.channel.send('끝말잇기 서버가 아닙니다.');
     return;
   }
+  console.log(message.guild.id);
 
   const id = message.author.id;
   const username = message.author.username;
@@ -65,15 +66,6 @@ client.on('message', (message) => {
     case '방초대':
       message.delete();
       inviteGame(message, args);
-    case 'a':
-      message.delete();
-      const messageEmbed = new Discord.MessageEmbed()
-        .setColor('#bf3b3b')
-        .setTitle('환영합니다')
-        .setDescription(
-          ' \n본 서버에 오신걸 환영합니다\n본 서버에서는 끝말잇기를 즐길 수 있습니다\n아래의 이모지를 누르시면, 권한을 얻을 수 있습니다\n권한을 얻으시고, 법전을 꼭 읽어주세요\n그로 인하여 일어나는 피해는 모두 본인과실인점 알아주시면 감사하겠습니다',
-        );
-      message.channel.send(messageEmbed).then((msg) => msg.react('👍'));
   }
 });
 
@@ -81,15 +73,38 @@ const filter = (reaction, user) => {
   return '✅' === reaction.emoji.name;
 };
 
+client.on('guildMemberAdd', async (member) => {
+  const guild = client.guilds.cache.find((g) => g.id === '715790300672426105');
+  const channel = guild.channels.cache.find(
+    (ch) => ch.id === `715791707513290812`,
+  );
+  member.roles.add('717382493652779008');
+  const joinEmbed = new Discord.MessageEmbed()
+    .setColor('#3786db')
+    .setTitle('DuiKKUT Discord - Welcome')
+    .setDescription(
+      `안녕하세요 <@${member.id}>! 디스코드 끝말잇기 서버에 오신 것을 환영합니다. 본 서버의 모든 권한을 얻기 위해선, 인증채널에서 이모지를 눌러주세요. <#717545096995799112>에서 규칙을 꼭 읽고, 게임 진행을 해 주시길 바랍니다`,
+    )
+    .setThumbnail('https://cdn.discordapp.com/embed/avatars/3.png');
+  channel.send(`<@${member.id}>`);
+  channel.send(joinEmbed);
+});
+
 client.on('messageReactionAdd', async (reaction, user) => {
-  if (reaction.message.id === 717386338877571153 && !user.bot) {
-    reaction.message.reactions.removeAll();
-    reaction.message.react('👍');
-    
+  if (reaction.message.id === '717386338877571153' && !user.bot) {
+    await reaction.message.reactions.removeAll;
+    await reaction.message.react('👍');
+    const guildMember = reaction.message.guild.member(user);
+    guildMember.roles.remove('717382493652779008');
+    guildMember.roles.add('717382544340942868');
   }
   if (!reaction.message.guild && !user.bot) {
     // fetch message -> resolve promise from fetch -> message#reactions
-    inviteGameEvent(reaction, user, client.guilds.get('715791707513290812'));
+    inviteGameEvent(
+      reaction,
+      user,
+      client.guilds.cache.find((g) => g.id === '715790300672426105'),
+    );
     return;
   }
   const guild = reaction.message.guild;

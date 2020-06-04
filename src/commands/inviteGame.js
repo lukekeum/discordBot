@@ -11,6 +11,7 @@ const filterDenied = (reaction, user) => {
 let object = {};
 
 export const inviteGameEvent = async (reaction, user0, guild) => {
+  reaction.message.delete();
   const fetchMessage = await reaction.message.fetch();
   let targetPerson;
   if (fetchMessage.reactions.cache.find(filterChecked).count === 2) {
@@ -24,9 +25,10 @@ export const inviteGameEvent = async (reaction, user0, guild) => {
     }
     object = copyObject;
     // TODO: add role to player
-    const user = guild.member.cache(targetPerson);
-    console.log(user);
-    console.log(`[LOG] ${user.id} joined channel`);
+    const user = guild.members.cache.find(
+      (member) => member.id === targetPerson,
+    );
+    console.log(`[LOG] joined channel`);
   }
   if (fetchMessage.reactions.cache.find(filterDenied).count === 2) {
     // TODO: condition of if player clicked cross mark
