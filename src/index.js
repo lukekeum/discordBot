@@ -43,7 +43,6 @@ client.on('message', (message) => {
     return;
   }
   console.log(message.guild.id);
-
   const id = message.author.id;
   const username = message.author.username;
   const thumbnail = message.author.displayAvatarURL();

@@ -1,4 +1,4 @@
-import Discord, { ReactionCollector } from 'discord.js';
+import Discord from 'discord.js';
 
 const filterChecked = (reaction, user) => {
   return '✅' === reaction.emoji.name;
@@ -10,14 +10,28 @@ const filterDenied = (reaction, user) => {
 
 let object = {};
 
-export const inviteGameEvent = async (reaction, user0, guild) => {
+const getUserFromMention = (mention) => {
+  if (!mention) return;
+
+  if (mention.startsWith('<@') && mention.endsWith('>')) {
+    mention = mention.slice(2, -1);
+
+    if (mention.startsWith('!')) {
+      mention = mention.slice(1);
+    }
+
+    return mention;
+  }
+};
+
+export const inviteGameEvent = async (reaction, user, guild) => {
   reaction.message.delete();
   const fetchMessage = await reaction.message.fetch();
   let targetPerson;
   if (fetchMessage.reactions.cache.find(filterChecked).count === 2) {
     let copyObject = {}; // remove player's info from Object array...
-    for (let ArrayofInfo in Object.entries(object)) {
-      if (ArrayofInfo[0] === user0.id) {
+    for (let ArrayofInfo of Object.entries(object)) {
+      if (`${ArrayofInfo[0]}` === `${user.id}`) {
         targetPerson = ArrayofInfo[1];
         continue;
       }
@@ -25,14 +39,26 @@ export const inviteGameEvent = async (reaction, user0, guild) => {
     }
     object = copyObject;
     // TODO: add role to player
-    const user = guild.members.cache.find(
+    const targetPlayer = guild.members.cache.find(
       (member) => member.id === targetPerson,
     );
-    console.log(`[LOG] joined channel`);
+    const role = targetPlayer.roles.cache.find((roles) =>
+      roles.name.includes('HeadGamer-'),
+    );
+    const roomNumber = role.name.split('-')[1];
+    user.roles.add(
+      guild.roles.cache.find((roles) => roles.name === `Player-${roomNumber}`),
+    );
+    console.log(`[LOG] ${user.id} joined channel from ${targetPlayer.id}`);
   }
   if (fetchMessage.reactions.cache.find(filterDenied).count === 2) {
     // TODO: condition of if player clicked cross mark
+    inviteTimeout();
   }
+};
+
+const inviteTimeout = () => {
+  console.log('denied');
 };
 
 const InviteGame = (message, args) => {
@@ -82,9 +108,23 @@ const InviteGame = (message, args) => {
       } catch (err) {
         console.error(err);
       }
-      msg.delete({ timeout: 60000 });
+      let time = 60;
+      const interval = setInterval(functionalTimer, 1000);
+      function functionalTimer() {
+        console.log(time);
+        time--;
+        if (time < 1) {
+          clearTimeout(interval);
+          if (msg) {
+            msg.delete();
+            inviteTimeout();
+          }
+        }
+        return;
+      }
     });
-  object[message.mentions.members.id] = message.author.id;
+  object[getUserFromMention(args[0])] = message.author.id;
+  console.log(object);
 };
 
 export default InviteGame;
