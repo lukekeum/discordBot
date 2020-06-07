@@ -1,6 +1,6 @@
 import Discord from 'discord.js';
 
-import randomID from '../api/randomID';
+import randomID from '../utils/randomID';
 
 const roundSettingRoom = [];
 

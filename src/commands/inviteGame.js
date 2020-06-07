@@ -53,12 +53,25 @@ export const inviteGameEvent = async (reaction, user, guild) => {
   }
   if (fetchMessage.reactions.cache.find(filterDenied).count === 2) {
     // TODO: condition of if player clicked cross mark
-    inviteTimeout();
+    inviteTimeout(reaction, user, guild);
   }
 };
 
-const inviteTimeout = () => {
-  console.log('denied');
+const inviteTimeout = async () => {
+  let copyObject = {}; // remove player's info from Object array...
+  for (let ArrayofInfo of Object.entries(object)) {
+    if (`${ArrayofInfo[0]}` === `${user.id}`) {
+      targetPerson = ArrayofInfo[1];
+      continue;
+    }
+    copyObject[ArrayofInfo[0]] = ArrayofInfo[1];
+  }
+  object = copyObject;
+  const targetPlayer = guild.members.cache.find(
+    (member) => member.id === targetPerson,
+  );
+
+  targetPlayer.send();
 };
 
 const InviteGame = (message, args) => {
@@ -111,11 +124,10 @@ const InviteGame = (message, args) => {
       let time = 60;
       const interval = setInterval(functionalTimer, 1000);
       function functionalTimer() {
-        console.log(time);
         time--;
         if (time < 1) {
           clearTimeout(interval);
-          if (msg) {
+          if (object[getUserFromMention(args[0])]) {
             msg.delete();
             inviteTimeout();
           }
@@ -124,7 +136,6 @@ const InviteGame = (message, args) => {
       }
     });
   object[getUserFromMention(args[0])] = message.author.id;
-  console.log(object);
 };
 
 export default InviteGame;
